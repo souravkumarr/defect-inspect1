@@ -5,6 +5,8 @@ flask-socketio
 numpy
 pillow
 matplotlib
-opencv-python
+opencv-python-headless
 roboflow
 werkzeug
+gunicorn
+eventlet

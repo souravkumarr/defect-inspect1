@@ -631,5 +631,11 @@ def handle_video_frame(data):
     except Exception as e:
         print(f"Error in video frame processing: {e}")
 
-if __name__ == '__main__':
-    socketio.run(app, debug=True, host='127.0.0.1', port=5000, allow_unsafe_werkzeug=True)
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    socketio.run(
+        app,
+        host="0.0.0.0",
+        port=port,
+        debug=False
+    )
