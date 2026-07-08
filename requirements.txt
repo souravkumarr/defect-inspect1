@@ -1,0 +1,10 @@
+ultralytics
+flask
+flask-sqlalchemy
+flask-socketio
+numpy
+pillow
+matplotlib
+opencv-python
+roboflow
+werkzeug

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AeroInspect AI - Aircraft Surface Fault Detection</title>
+    <meta name="description" content="AI-powered aircraft surface fault detection for corrosion, cracks, and dents.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="site-shell">
+        <nav class="top-nav" aria-label="Main navigation">
+            <a class="brand" href="/">
+                <span class="brand-mark"><i class="fa-solid fa-plane-up"></i></span>
+                <span>
+                    <strong>AeroInspect AI</strong>
+                    <small>Surface fault detection</small>
+                </span>
+            </a>
+
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/inspect#scanner">Scanner</a>
+                <a href="/inspect#report">Report</a>
+                <a href="/inspect#assistant">Assistant</a>
+            </div>
+
+            <a class="engine-status" href="/inspect">
+                <span class="status-dot"></span>
+                Start inspection
+            </a>
+        </nav>
+
+        <header class="hero-band">
+            <div>
+                <p class="eyebrow">Aircraft maintenance intelligence</p>
+                <h1>AeroInspect AI</h1>
+                <p class="hero-copy">A focused inspection workspace for aircraft surface damage. Upload a component image, detect corrosion, cracks, and dents, then review part context and maintenance recommendations.</p>
+                <p class="hero-copy"><a class="btn btn-primary" href="/inspect"><i class="fa-solid fa-magnifying-glass-chart"></i> Open inspection scanner</a></p>
+            </div>
+            <div class="hero-stats" aria-label="Detection classes">
+                <div><span><i class="fa-solid fa-shield-halved"></i></span><small>corrosion screening</small></div>
+                <div><span><i class="fa-solid fa-wave-square"></i></span><small>crack detection</small></div>
+                <div><span><i class="fa-solid fa-circle-dot"></i></span><small>dent mapping</small></div>
+            </div>
+        </header>
+
+        <main class="workbench">
+            <section class="panel scanner-panel">
+                <div class="panel-heading">
+                    <div>
+                        <p class="section-kicker">Detection</p>
+                        <h2>Fault Classes</h2>
+                    </div>
+                    <i class="fa-solid fa-crosshairs"></i>
+                </div>
+                <div class="component-grid">
+                    <div><h4>Corrosion</h4><p>Highlights coating breakdown, rust, and surface degradation areas for maintenance review.</p></div>
+                    <div><h4>Cracks</h4><p>Flags possible stress fractures that should be confirmed with approved NDT procedures.</p></div>
+                    <div><h4>Dents</h4><p>Maps impact deformation so depth, width, location, and structural limits can be checked.</p></div>
+                    <div><h4>Part context</h4><p>Adds information about common aircraft areas such as fuselage skin, wing panels, cowlings, and control surfaces.</p></div>
+                </div>
+            </section>
+
+            <section class="panel results-panel">
+                <div class="panel-heading">
+                    <div>
+                        <p class="section-kicker">Workflow</p>
+                        <h2>Inspection Flow</h2>
+                    </div>
+                    <i class="fa-solid fa-list-check"></i>
+                </div>
+                <ul class="recommendation-list">
+                    <li><i class="fa-solid fa-circle-check"></i><span>Choose the aircraft area and upload a surface image.</span></li>
+                    <li><i class="fa-solid fa-circle-check"></i><span>Run the YOLOv8 damage detector to create an annotated image.</span></li>
+                    <li><i class="fa-solid fa-circle-check"></i><span>Review component information, defect counts, and maintenance next steps.</span></li>
+                    <li><i class="fa-solid fa-circle-check"></i><span>Use the built-in assistant for quick questions about defects and inspection focus.</span></li>
+                </ul>
+            </section>
+        </main>
+
+        <footer class="app-footer">
+            AeroInspect AI Systems - educational aircraft surface inspection aid
+        </footer>
+    </div>
+</body>
+</html>

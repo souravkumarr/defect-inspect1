@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Dashboard - AeroInspect AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="theme-dark">
+    <div class="app-shell">
+        <header class="app-header">
+            <div class="header-left">
+                <div class="logo">
+                    <i class="fa-solid fa-plane-shield"></i>
+                    <span>AeroInspect AI</span>
+                </div>
+            </div>
+            <nav class="app-nav">
+                <a href="{{ url_for('landing') }}">Home</a>
+                <a href="{{ url_for('inspect') }}">Scanner</a>
+                <a href="{{ url_for('analytics') }}" class="active">Analytics</a>
+            </nav>
+        </header>
+
+        <main class="main-content" style="padding: 30px; max-width: 1200px; margin: 0 auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <div>
+                    <h1 style="font-family: var(--font-header); font-size: 1.8rem; margin: 0;">Fleet Health & Defect Analytics</h1>
+                    <p style="color: var(--muted); margin: 4px 0 0 0;">Real-time overview of aircraft surface integrity and historical defects across inspected models.</p>
+                </div>
+                <div class="metric-card" style="background: var(--surface-1); padding: 12px 20px;">
+                    <span style="font-size: 0.8rem; color: var(--muted);">OVERALL FLEET HEALTH</span>
+                    <strong style="font-size: 1.4rem; color: #2dd4bf;">88.4% Optimal</strong>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; margin-bottom: 30px;">
+                <div class="component-card" style="padding: 20px;">
+                    <h3 style="font-family: var(--font-header); font-size: 1.1rem; margin-bottom: 15px;"><i class="fa-solid fa-chart-pie"></i> Defect Distribution by Type</h3>
+                    <canvas id="defectTypeChart" height="220"></canvas>
+                </div>
+
+                <div class="component-card" style="padding: 20px;">
+                    <h3 style="font-family: var(--font-header); font-size: 1.1rem; margin-bottom: 15px;"><i class="fa-solid fa-plane"></i> Defect Frequency by Aircraft Model</h3>
+                    <canvas id="aircraftModelChart" height="220"></canvas>
+                </div>
+            </div>
+
+            <div class="component-card" style="padding: 20px;">
+                <h3 style="font-family: var(--font-header); font-size: 1.1rem; margin-bottom: 15px;"><i class="fa-solid fa-chart-line"></i> Historical Inspection Defect Trend (Past 6 Months)</h3>
+                <canvas id="trendChart" height="100"></canvas>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Defect Type Chart
+        const ctxType = document.getElementById('defectTypeChart').getContext('2d');
+        new Chart(ctxType, {
+            type: 'doughnut',
+            data: {
+                labels: ['Corrosion', 'Cracks', 'Dents'],
+                datasets: [{
+                    data: [42, 18, 40],
+                    backgroundColor: ['#f59e0b', '#ef4444', '#3b82f6'],
+                    borderColor: '#111418',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom', labels: { color: '#cbd5e1' } }
+                }
+            }
+        });
+
+        // Aircraft Model Chart
+        const ctxModel = document.getElementById('aircraftModelChart').getContext('2d');
+        new Chart(ctxModel, {
+            type: 'bar',
+            data: {
+                labels: ['A320', 'B737', 'B787', 'A350', 'Cessna'],
+                datasets: [{
+                    label: 'Reported Defects',
+                    data: [14, 19, 6, 4, 11],
+                    backgroundColor: '#0f766e',
+                    borderColor: '#2dd4bf',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: { grid: { color: '#1e293b' }, ticks: { color: '#cbd5e1' } },
+                    x: { grid: { color: '#1e293b' }, ticks: { color: '#cbd5e1' } }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+
+        // Trend Chart
+        const ctxTrend = document.getElementById('trendChart').getContext('2d');
+        new Chart(ctxTrend, {
+            type: 'line',
+            data: {
+                labels: ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+                datasets: [
+                    {
+                        label: 'Corrosion',
+                        data: [12, 15, 8, 14, 10, 18],
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'Cracks',
+                        data: [3, 5, 2, 6, 4, 7],
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'Dents',
+                        data: [8, 10, 12, 9, 11, 15],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: { grid: { color: '#1e293b' }, ticks: { color: '#cbd5e1' } },
+                    x: { grid: { color: '#1e293b' }, ticks: { color: '#cbd5e1' } }
+                },
+                plugins: {
+                    legend: { position: 'top', labels: { color: '#cbd5e1' } }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

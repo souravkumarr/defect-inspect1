@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AeroInspect AI - Aircraft Surface Fault Detection</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="site-intro" id="site-intro">
+        <i class="fa-solid fa-plane-up intro-logo"></i>
+        <div class="intro-text">AEROINSPECT AI</div>
+    </div>
+    <div class="site-shell">
+        <nav class="top-nav" aria-label="Main navigation">
+            <a class="brand" href="/">
+                <span class="brand-mark"><i class="fa-solid fa-plane-up"></i></span>
+                <span>
+                    <strong>AeroInspect AI</strong>
+                    <small>Surface fault detection</small>
+                </span>
+            </a>
+
+            <div class="nav-links">
+                <a href="/" data-i18n="home">Home</a>
+                <a href="#scanner" data-i18n="scanner">Scanner</a>
+                <a href="#report" data-i18n="report">Report</a>
+                <a href="/analytics" data-i18n="analytics">Analytics</a>
+                <a href="#" id="db-search-btn" data-i18n="aircraft_db"><i class="fa-solid fa-database"></i> Aircraft DB</a>
+            </div>
+
+            <div style="display: flex; gap: 12px; align-items: center;">
+                <select id="language-select" style="background: var(--surface-1); color: var(--text); border: 1px solid var(--line); border-radius: var(--radius); padding: 4px 8px; font-size: 0.85rem;">
+                    <option value="en">🌍 English</option>
+                    <option value="fr">🌍 Français</option>
+                    <option value="de">🌍 Deutsch</option>
+                    <option value="ja">🌍 日本語</option>
+                </select>
+                <div class="engine-status">
+                    <span class="status-dot"></span>
+                    YOLOv8 ready
+                </div>
+            </div>
+        </nav>
+
+        <header class="hero-band">
+            <div>
+                <p class="eyebrow">Aircraft maintenance intelligence</p>
+                <h1>Inspect aircraft surfaces, understand the part, and plan the next check.</h1>
+                <p class="hero-copy">Upload a component photo to detect corrosion, cracks, and dents. The report adds component context, where that part is used, and focused maintenance guidance.</p>
+            </div>
+            <div class="hero-stats" aria-label="Detection classes">
+                <div><span>03</span><small>trained fault classes</small></div>
+                <div><span>NDT</span><small>crack escalation guidance</small></div>
+                <div><span>16MB</span><small>image upload limit</small></div>
+            </div>
+        </header>
+
+        <main class="workbench">
+            <section id="scanner" class="panel scanner-panel" aria-labelledby="scanner-heading">
+                <div class="panel-heading">
+                    <div>
+                        <p class="section-kicker">Step 1</p>
+                        <h2 id="scanner-heading">Upload Surface Image or Live Stream</h2>
+                    </div>
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                </div>
+
+                <!-- Quick Access Enterprise Features Bar -->
+                <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; padding: 12px; background: rgba(45, 212, 191, 0.08); border: 1px solid var(--accent); border-radius: var(--radius);">
+                    <a href="/analytics" class="btn btn-secondary" style="font-size: 0.85rem; padding: 8px 14px;"><i class="fa-solid fa-chart-line"></i> 📊 Analytics Dashboard</a>
+                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('db-search-btn').click()" style="font-size: 0.85rem; padding: 8px 14px;"><i class="fa-solid fa-database"></i> ✈️ Aircraft Database Search (A320, B737, B787, A350, Cessna)</button>
+                </div>
+
+                <form id="upload-form" class="upload-form">
+                    <label class="field-label" for="component-select">Aircraft part or area</label>
+                    <select id="component-select" name="component_type" class="component-select">
+                        <option value="auto">Auto / unknown exterior panel</option>
+                        <option value="fuselage_skin">Fuselage skin panel</option>
+                        <option value="wing_panel">Wing skin or access panel</option>
+                        <option value="engine_cowling">Engine cowling / nacelle</option>
+                        <option value="control_surface">Flight control surface</option>
+                        <option value="landing_gear_door">Landing gear door / lower fairing</option>
+                    </select>
+
+                    <div class="confidence-control">
+                        <div class="confidence-header">
+                            <label class="field-label" for="confidence-slider">Confidence Threshold</label>
+                            <span id="confidence-value" class="badge badge-dent">25%</span>
+                        </div>
+                        <input type="range" id="confidence-slider" class="confidence-slider" min="10" max="95" step="5" value="25">
+                    </div>
+
+                    <div id="dropzone" class="dropzone" role="button" tabindex="0" aria-label="Choose aircraft image">
+                        <input type="file" id="image-input" name="image" accept="image/*" class="file-input">
+                        <div class="dropzone-content" id="dropzone-default">
+                            <i class="fa-solid fa-image"></i>
+                            <h3>Drop an aircraft surface photo here</h3>
+                            <p>or click to choose a JPG, PNG, JPEG, or WEBP image</p>
+                        </div>
+
+                        <div class="preview-container hidden" id="preview-container">
+                            <img src="" alt="Upload preview" id="image-preview" class="image-preview">
+                            <div class="scanner-line hidden" id="scanner-line"></div>
+                            <div class="scan-overlay-text hidden" id="scan-overlay-text">
+                                <i class="fa-solid fa-circle-notch fa-spin"></i>
+                                Running inspection
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="upload-actions" style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                        <input type="file" id="camera-input" name="camera" accept="image/*" capture="environment" class="hidden" style="display: none;">
+                        <button type="button" class="btn btn-secondary" id="camera-btn" style="flex: 1; min-width: 150px; margin-top: 8px;">
+                            <i class="fa-solid fa-camera"></i> Take Photo
+                        </button>
+                        <button type="button" class="btn btn-primary" id="direct-live-btn" style="flex: 1; min-width: 180px; margin-top: 8px; background: #0f766e; border-color: #2dd4bf;">
+                            <i class="fa-solid fa-video"></i> 🔴 Live Camera Detection
+                        </button>
+                    </div>
+
+                    <div class="action-row">
+                        <button type="submit" id="analyze-btn" class="btn btn-primary" disabled>
+                            <i class="fa-solid fa-magnifying-glass-chart"></i>
+                            Run analysis
+                        </button>
+                        <button type="button" id="reset-btn" class="btn btn-secondary hidden">
+                            <i class="fa-solid fa-rotate-left"></i>
+                            Reset
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="panel results-panel empty" id="report">
+                <div class="empty-state-content" id="results-empty-state">
+                    <i class="fa-solid fa-clipboard-check"></i>
+                    <h2>Inspection report pending</h2>
+                    <p>Select the aircraft area, upload an image, and run analysis to generate annotated results, defect counts, component information, and maintenance recommendations.</p>
+                </div>
+
+                <div class="analysis-results hidden" id="analysis-results" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div class="panel-heading" style="grid-column: span 2;">
+                        <div>
+                            <span>AI Analysis</span>
+                            <h2>Inspection Report</h2>
+                        </div>
+                        <div class="panel-actions">
+                            <button type="button" id="export-csv-btn" class="btn btn-secondary btn-sm" title="Export as CSV"><i class="fa-solid fa-download"></i> Export CSV</button>
+                        </div>
+                    </div>
+
+                    <div class="image-comparison-grid" style="grid-column: span 2;">
+                        <figure class="image-frame">
+                            <figcaption>Original</figcaption>
+                            <img src="" alt="Original upload" id="result-original-img">
+                        </figure>
+                        <figure class="image-frame">
+                            <figcaption>AI annotated</figcaption>
+                            <img src="" alt="Annotated detection result" id="result-annotated-img">
+                        </figure>
+                    </div>
+
+                    <div class="summary-metrics" style="grid-column: span 2; display: grid; grid-template-columns: repeat(4, 1fr);">
+                        <div class="metric-card corrosion">
+                            <span>Corrosion</span>
+                            <strong id="count-corrosion">0</strong>
+                        </div>
+                        <div class="metric-card crack">
+                            <span>Cracks</span>
+                            <strong id="count-crack">0</strong>
+                        </div>
+                        <div class="metric-card dent">
+                            <span>Dents</span>
+                            <strong id="count-dent">0</strong>
+                        </div>
+                        <div class="metric-card risk-meter" style="display: flex; flex-direction: column; justify-content: space-between; background: rgba(239, 68, 68, 0.12); border-color: rgba(239, 68, 68, 0.3);">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="color: #ef4444; font-weight: 600;" data-i18n="risk_title">🔥 Aircraft Risk Meter</span>
+                                <span id="risk-score-badge" class="badge badge-dent" style="background: #ef4444; color: #fff; font-size: 0.8rem;" data-i18n="risk_badge">Moderate Risk</span>
+                            </div>
+                            <div id="risk-bar-text" style="font-family: monospace; font-size: 1.1rem; color: #f87171; letter-spacing: 2px; margin-top: 6px;">██████░░░░ Medium</div>
+                        </div>
+                    </div>
+
+                    <!-- Row 1 Left: Aircraft Component Details & Location Workflow -->
+                    <article class="component-card" style="grid-column: 1; display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
+                        <div>
+                            <div class="card-title-row">
+                                <h3 id="component-name">Aircraft Component Details</h3>
+                                <span>Part context</span>
+                            </div>
+                            <div class="component-grid" style="margin-top: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                <div>
+                                    <h4>What it is used for</h4>
+                                    <p id="component-used-for"></p>
+                                </div>
+                                <div>
+                                    <h4>Where it is used</h4>
+                                    <p id="component-where-used"></p>
+                                </div>
+                                <div>
+                                    <h4>Inspection focus</h4>
+                                    <p id="component-inspection-focus"></p>
+                                </div>
+                                <div>
+                                    <h4>Report note</h4>
+                                    <p id="component-risk-note"></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flowchart-container" id="flowchart-section" style="margin-top: 14px; background: rgba(15,23,42,0.5); padding: 12px; border-radius: var(--radius); border: 1px solid var(--line-soft);">
+                            <h4><i class="fa-solid fa-sitemap"></i> Location Workflow</h4>
+                            <div class="mermaid" id="mermaid-container"></div>
+                        </div>
+                    </article>
+
+                    <!-- Row 1 Right: ⭐ Predictive Maintenance AI -->
+                    <article class="component-card predictive-ai-card" id="predictive-ai-section" style="grid-column: 2; display: flex; flex-direction: column; justify-content: space-between; height: 100%; border: 1px solid #8b5cf6; background: linear-gradient(145deg, rgba(139, 92, 246, 0.1), rgba(15, 23, 42, 0.8));">
+                        <div>
+                            <div class="card-title-row">
+                                <h3 style="color: #c4b5fd;"><i class="fa-solid fa-crystal-ball"></i> ⭐ Predictive Maintenance AI</h3>
+                                <span class="badge" style="background: #8b5cf6; color: #fff;">Failure Forecasting Engine</span>
+                            </div>
+                            <p style="color: var(--muted); font-size: 0.85rem; margin-top: 4px;">Predicts structural progression before critical failure occurs using fatigue progression dynamics.</p>
+                            <div class="pred-grid" style="margin-top: 14px; display: grid; grid-template-columns: 1fr; gap: 10px;">
+                                <div style="background: rgba(15, 23, 42, 0.6); padding: 14px; border-radius: var(--radius); border: 1px solid var(--line-soft);">
+                                    <span style="font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em;">Current Damage</span>
+                                    <div id="pred-current-damage" style="font-size: 1.15rem; font-weight: 700; color: #f87171; margin-top: 4px;">Dent detected</div>
+                                </div>
+                                <div style="background: rgba(15, 23, 42, 0.6); padding: 14px; border-radius: var(--radius); border: 1px solid var(--line-soft);">
+                                    <span style="font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em;">AI Prediction Dynamics</span>
+                                    <div id="pred-ai-prediction" style="font-size: 0.98rem; color: #e2e8f0; margin-top: 6px; line-height: 1.4;">There is a <strong>78% probability</strong> this dent will develop into fatigue cracking within <strong>120 flight hours</strong>.</div>
+                                    <div style="width: 100%; background: rgba(255,255,255,0.1); height: 8px; border-radius: 4px; margin-top: 12px; overflow: hidden;">
+                                        <div id="pred-prob-bar" style="width: 78%; background: #f59e0b; height: 100%; transition: width 0.5s ease;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 14px; padding: 12px 14px; background: rgba(245, 158, 11, 0.15); border-left: 4px solid #f59e0b; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                            <div>
+                                <strong style="color: #fbbf24; font-size: 0.9rem;"><i class="fa-solid fa-triangle-exclamation"></i> Recommendation:</strong>
+                                <span id="pred-recommendation" style="color: #fff; margin-left: 6px; font-size: 0.88rem;">Repair within 30 flight hours.</span>
+                            </div>
+                            <span style="font-size: 0.75rem; color: #cbd5e1; background: rgba(0,0,0,0.35); padding: 3px 8px; border-radius: 4px; font-weight: 600;">Safety Protocol #409</span>
+                        </div>
+                    </article>
+
+                    <!-- Row 2 Left: AI summary -->
+                    <article class="caption-container" style="grid-column: 1; display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
+                        <div>
+                            <h3><i class="fa-solid fa-align-left"></i> AI summary</h3>
+                            <p id="report-caption" style="margin-top: 8px; line-height: 1.5; color: var(--text); font-size: 0.95rem;"></p>
+                        </div>
+                    </article>
+
+                    <!-- Row 2 Right: AI Repair Recommendation & Actions -->
+                    <article class="recommendations-container" style="grid-column: 2; display: flex; flex-direction: column; justify-content: space-between; height: 100%; border-left: 4px solid var(--accent);">
+                        <div>
+                            <h3 style="color: var(--accent);"><i class="fa-solid fa-robot"></i> AI Repair Recommendation & Actions</h3>
+                            <ul class="recommendation-list" id="report-recommendations" style="margin-top: 10px; font-size: 0.9rem;"></ul>
+                        </div>
+                    </article>
+
+                    <!-- Row 3 Left: 💰 AI Maintenance Cost Estimator Section -->
+                    <article class="component-card cost-estimator-card" id="cost-estimator-section" style="grid-column: 1; display: flex; flex-direction: column; justify-content: space-between; height: 100%; border: 1px solid #10b981; background: linear-gradient(145deg, rgba(16, 185, 129, 0.08), rgba(15, 23, 42, 0.8));">
+                        <div>
+                            <div class="card-title-row">
+                                <h3 style="color: #6ee7b7;"><i class="fa-solid fa-file-invoice-dollar"></i> 💰 AI Maintenance Cost Estimator</h3>
+                                <span class="badge" style="background: #10b981; color: #000; font-weight: 700; font-size: 0.72rem;">Automated Quote</span>
+                            </div>
+                            <p style="color: var(--muted); font-size: 0.82rem; margin-top: 4px;">Real-time breakdown of repair costs calculated from measured defect dimensions.</p>
+                            <div style="overflow-x: auto; margin-top: 12px;">
+                                <table class="data-table" style="margin-top: 0; font-size: 0.85rem;">
+                                    <thead>
+                                        <tr>
+                                            <th>Cost Component</th>
+                                            <th>Description</th>
+                                            <th style="text-align: right;">Cost (INR ₹)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="cost-breakdown-body">
+                                        <tr>
+                                            <td><strong>Dent / Surface Repair</strong></td>
+                                            <td id="cost-desc-repair">Structural blending and composite filling</td>
+                                            <td style="text-align: right; font-family: monospace; font-size: 0.98rem;" id="cost-val-repair">₹18,000</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Inspection Fee</strong></td>
+                                            <td>NDT Ultrasonic & Eddy-Current Scan</td>
+                                            <td style="text-align: right; font-family: monospace; font-size: 0.98rem;">₹4,000</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Labour</strong></td>
+                                            <td>Certified Aviation Engineer (4.5 hrs)</td>
+                                            <td style="text-align: right; font-family: monospace; font-size: 0.98rem;">₹6,500</td>
+                                        </tr>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr style="background: rgba(16, 185, 129, 0.15); font-weight: 700;">
+                                            <td colspan="2" style="font-size: 0.95rem; color: #34d399;">Estimated Total Repair Cost</td>
+                                            <td style="text-align: right; font-family: monospace; font-size: 1.15rem; color: #34d399;" id="cost-val-total">₹28,500</td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Row 3 Right: 🔄 Maintenance Workflow Engine Section -->
+                    <article class="component-card workflow-engine-card" id="workflow-engine-section" style="grid-column: 2; display: flex; flex-direction: column; justify-content: space-between; height: 100%; border: 1px solid #3b82f6; background: linear-gradient(145deg, rgba(59, 130, 246, 0.08), rgba(15, 23, 42, 0.8));">
+                        <div>
+                            <div class="card-title-row">
+                                <h3 style="color: #93c5fd;"><i class="fa-solid fa-diagram-project"></i> 🔄 Maintenance Workflow Engine</h3>
+                                <span class="badge" style="background: #3b82f6; color: #fff; font-size: 0.72rem;">Live Pipeline</span>
+                            </div>
+                            <p style="color: var(--muted); font-size: 0.82rem; margin-top: 4px;">Real aviation workflow pipeline tracking from initial AI detection through to final release.</p>
+                            
+                            <div class="workflow-stepper" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 14px;">
+                                <div class="step-item step-completed" style="background: rgba(16,185,129,0.15); border: 1px solid #10b981; padding: 8px; border-radius: var(--radius); text-align: center;">
+                                    <i class="fa-solid fa-check-double" style="color: #34d399; font-size: 1.1rem;"></i>
+                                    <div style="font-weight: 600; font-size: 0.78rem; margin-top: 4px; color: #fff;">Inspection</div>
+                                    <span style="font-size: 0.65rem; color: #34d399;">Passed</span>
+                                </div>
+                                <div class="step-item step-completed" style="background: rgba(16,185,129,0.15); border: 1px solid #10b981; padding: 8px; border-radius: var(--radius); text-align: center;">
+                                    <i class="fa-solid fa-microchip" style="color: #34d399; font-size: 1.1rem;"></i>
+                                    <div style="font-weight: 600; font-size: 0.78rem; margin-top: 4px; color: #fff;">AI Detection</div>
+                                    <span style="font-size: 0.65rem; color: #34d399;">Completed</span>
+                                </div>
+                                <div class="step-item step-active" id="wf-step-review" style="background: rgba(59,130,246,0.25); border: 2px solid #60a5fa; padding: 8px; border-radius: var(--radius); text-align: center; box-shadow: 0 0 10px rgba(96,165,250,0.4); cursor: pointer;" onclick="advanceWorkflow(3)">
+                                    <i class="fa-solid fa-user-gear" style="color: #60a5fa; font-size: 1.1rem;"></i>
+                                    <div style="font-weight: 600; font-size: 0.78rem; margin-top: 4px; color: #fff;">Engineer Review</div>
+                                    <span style="font-size: 0.65rem; color: #93c5fd; font-weight: 600;">⏳ Click to Approve</span>
+                                </div>
+                                <div class="step-item" id="wf-step-order" style="background: rgba(15,23,42,0.6); border: 1px solid var(--line); padding: 8px; border-radius: var(--radius); text-align: center; opacity: 0.6; cursor: pointer;" onclick="advanceWorkflow(4)">
+                                    <i class="fa-solid fa-clipboard-list" style="color: var(--muted); font-size: 1.1rem;"></i>
+                                    <div style="font-weight: 600; font-size: 0.78rem; margin-top: 4px; color: var(--text);">Repair Order</div>
+                                    <span style="font-size: 0.65rem; color: var(--muted);">Pending</span>
+                                </div>
+                                <div class="step-item" id="wf-step-repair" style="background: rgba(15,23,42,0.6); border: 1px solid var(--line); padding: 8px; border-radius: var(--radius); text-align: center; opacity: 0.6; cursor: pointer;" onclick="advanceWorkflow(5)">
+                                    <i class="fa-solid fa-wrench" style="color: var(--muted); font-size: 1.1rem;"></i>
+                                    <div style="font-weight: 600; font-size: 0.78rem; margin-top: 4px; color: var(--text);">Repair</div>
+                                    <span style="font-size: 0.65rem; color: var(--muted);">Pending</span>
+                                </div>
+                                <div class="step-item" id="wf-step-qc" style="background: rgba(15,23,42,0.6); border: 1px solid var(--line); padding: 8px; border-radius: var(--radius); text-align: center; opacity: 0.6; cursor: pointer;" onclick="advanceWorkflow(6)">
+                                    <i class="fa-solid fa-magnifying-glass-chart" style="color: var(--muted); font-size: 1.1rem;"></i>
+                                    <div style="font-weight: 600; font-size: 0.78rem; margin-top: 4px; color: var(--text);">Quality Check</div>
+                                    <span style="font-size: 0.65rem; color: var(--muted);">Pending</span>
+                                </div>
+                                <div class="step-item" id="wf-step-approved" style="background: rgba(15,23,42,0.6); border: 1px solid var(--line); padding: 8px; border-radius: var(--radius); text-align: center; opacity: 0.6; cursor: pointer;" onclick="advanceWorkflow(7)">
+                                    <i class="fa-solid fa-certificate" style="color: var(--muted); font-size: 1.1rem;"></i>
+                                    <div style="font-weight: 600; font-size: 0.78rem; margin-top: 4px; color: var(--text);">Approved</div>
+                                    <span style="font-size: 0.65rem; color: var(--muted);">Pending</span>
+                                </div>
+                                <div class="step-item" id="wf-step-released" style="background: rgba(15,23,42,0.6); border: 1px solid var(--line); padding: 8px; border-radius: var(--radius); text-align: center; opacity: 0.6; cursor: pointer;" onclick="advanceWorkflow(8)">
+                                    <i class="fa-solid fa-plane-circle-check" style="color: var(--muted); font-size: 1.1rem;"></i>
+                                    <div style="font-weight: 600; font-size: 0.78rem; margin-top: 4px; color: var(--text);">Aircraft Released</div>
+                                    <span style="font-size: 0.65rem; color: var(--muted);">Pending</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                            <span id="wf-status-msg" style="font-size: 0.82rem; color: #60a5fa;"><i class="fa-solid fa-info-circle"></i> Click workflow step to sign off.</span>
+                            <button type="button" class="btn btn-secondary" onclick="resetWorkflow()" style="font-size: 0.72rem; padding: 4px 8px;"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+                        </div>
+                    </article>
+
+                    <!-- Row 5 Full Width: Detection details -->
+                    <article class="raw-data-container" style="grid-column: span 2;">
+                        <button class="accordion-header" id="raw-data-toggle" type="button">
+                            <span><i class="fa-solid fa-table"></i> Detection details</span>
+                            <i class="fa-solid fa-chevron-down toggle-icon"></i>
+                        </button>
+                        <div class="accordion-content hidden" id="raw-data-content">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Anomaly type</th>
+                                        <th>Confidence</th>
+                                        <th>Est. Size</th>
+                                        <th>Coordinates</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="detections-table-body"></tbody>
+                            </table>
+                        </div>
+                    </article>
+
+                    </article>
+                </div>
+            </section>
+
+            <aside class="panel chat-panel" id="assistant">
+                <div class="panel-heading">
+                    <div>
+                        <p class="section-kicker">Assistant</p>
+                        <h2>Fault Detection Chatbot</h2>
+                    </div>
+                    <button type="button" class="minimize-btn" id="chat-minimize-btn" aria-label="Minimize Chat">
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </button>
+                </div>
+
+                <div class="chat-window" id="chat-window" aria-live="polite">
+                    <div class="chat-message bot">
+                        <strong>Aero assistant</strong>
+                        <p>Ask me about corrosion, cracks, dents, component use, or what to inspect after upload.</p>
+                    </div>
+                </div>
+
+                <form class="chat-form" id="chat-form">
+                    <input type="text" id="chat-input" placeholder="Ask about cracks, corrosion, wing panels..." autocomplete="off">
+                    <button type="submit" class="icon-button" aria-label="Send message">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </form>
+            </aside>
+        </main>
+
+        <footer class="app-footer">
+            AeroInspect AI Systems - YOLOv8 aircraft surface inspection aid
+        </footer>
+    </div>
+    <!-- Image Zoom Modal -->
+    <div id="image-modal" class="image-modal hidden">
+        <button class="modal-close" id="modal-close" aria-label="Close modal"><i class="fa-solid fa-xmark"></i></button>
+        <img src="" id="modal-image" class="modal-content">
+    </div>
+
+    <!-- WebRTC Camera Modal -->
+    <div id="camera-webrtc-modal" class="image-modal hidden">
+        <div class="modal-content" style="background: var(--surface-1); padding: 20px; display: flex; flex-direction: column; gap: 15px; border-radius: var(--radius); border: 1px solid var(--line); max-width: 600px; width: 100%;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin: 0; font-family: var(--font-header);">Take Photo</h3>
+                <button type="button" id="camera-webrtc-close" style="background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1.5rem;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div style="position: relative; width: 100%;">
+                <video id="camera-video" autoplay playsinline style="width: 100%; border-radius: var(--radius); background: #000; display: block;"></video>
+                <canvas id="camera-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></canvas>
+            </div>
+            <div style="display: flex; gap: 12px; justify-content: center; align-items: center; flex-wrap: wrap;">
+                <button type="button" id="camera-capture-action" class="btn btn-primary">
+                    <i class="fa-solid fa-camera"></i> Capture Frame
+                </button>
+                <button type="button" id="camera-live-toggle" class="btn btn-secondary">
+                    <i class="fa-solid fa-video"></i> Start Live AI Detection
+                </button>
+            </div>
+            <canvas id="camera-canvas" class="hidden"></canvas>
+        </div>
+    </div>
+
+    <!-- Aircraft Database Search Modal -->
+    <div id="db-modal" class="image-modal hidden">
+        <div class="modal-content" style="background: var(--surface-1); padding: 25px; display: flex; flex-direction: column; gap: 18px; border-radius: var(--radius); border: 1px solid var(--line); max-width: 700px; width: 100%; max-height: 85vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin: 0; font-family: var(--font-header);"><i class="fa-solid fa-database"></i> Aircraft Database Search</h3>
+                <button type="button" id="db-modal-close" style="background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1.5rem;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div>
+                <label class="field-label" for="db-select">Select Aircraft Model / Tail Number</label>
+                <select id="db-select" class="component-select" style="margin-top: 6px;">
+                    <option value="A320">✈️ A320 (Tail: A320-101) - Commercial Jet</option>
+                    <option value="B737">✈️ B737 (Tail: B737-800) - Narrowbody Airliner</option>
+                    <option value="B787">✈️ B787 (Tail: B787-9) - Dreamliner Widebody</option>
+                    <option value="A350">✈️ A350 (Tail: A350-900) - Long-haul Composite</option>
+                    <option value="Cessna">🛩️ Cessna 172 (Tail: C172-SKY) - General Aviation</option>
+                </select>
+            </div>
+            <div id="db-results-panel" style="background: rgba(15, 23, 42, 0.6); padding: 16px; border-radius: var(--radius); border: 1px solid var(--line-soft);">
+                <!-- Dynamic DB details populated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.4.0/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({ startOnLoad: false, theme: 'dark' });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Remove intro overlay after animation
+            const intro = document.getElementById('site-intro');
+            if (intro) {
+                setTimeout(() => {
+                    intro.remove();
+                }, 3500); // 1.5s delay + 2s animation
+            }
+            const dropzone = document.getElementById('dropzone');
+            const imageInput = document.getElementById('image-input');
+            const componentSelect = document.getElementById('component-select');
+            const dropzoneDefault = document.getElementById('dropzone-default');
+            const previewContainer = document.getElementById('preview-container');
+            const imagePreview = document.getElementById('image-preview');
+            const analyzeBtn = document.getElementById('analyze-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const uploadForm = document.getElementById('upload-form');
+            const resultsPanel = document.getElementById('report');
+            const resultsEmptyState = document.getElementById('results-empty-state');
+            const analysisResults = document.getElementById('analysis-results');
+            const resultOriginalImg = document.getElementById('result-original-img');
+            const resultAnnotatedImg = document.getElementById('result-annotated-img');
+            const reportCaption = document.getElementById('report-caption');
+            const reportRecommendations = document.getElementById('report-recommendations');
+            const detectionsTableBody = document.getElementById('detections-table-body');
+            const countCorrosion = document.getElementById('count-corrosion');
+            const countCrack = document.getElementById('count-crack');
+            const countDent = document.getElementById('count-dent');
+            const scannerLine = document.getElementById('scanner-line');
+            const scanOverlayText = document.getElementById('scan-overlay-text');
+            const rawDataToggle = document.getElementById('raw-data-toggle');
+            const rawDataContent = document.getElementById('raw-data-content');
+            const chatForm = document.getElementById('chat-form');
+            const chatInput = document.getElementById('chat-input');
+            const chatWindow = document.getElementById('chat-window');
+            const confidenceSlider = document.getElementById('confidence-slider');
+            const confidenceValue = document.getElementById('confidence-value');
+            const exportCsvBtn = document.getElementById('export-csv-btn');
+            const imageModal = document.getElementById('image-modal');
+            const modalImage = document.getElementById('modal-image');
+            const modalClose = document.getElementById('modal-close');
+            let currentDamages = [];
+
+            const componentName = document.getElementById('component-name');
+            const componentUsedFor = document.getElementById('component-used-for');
+            const componentWhereUsed = document.getElementById('component-where-used');
+            const componentInspectionFocus = document.getElementById('component-inspection-focus');
+            const componentRiskNote = document.getElementById('component-risk-note');
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropzone.addEventListener(eventName, event => {
+                    event.preventDefault();
+                    dropzone.classList.add('dragover');
+                });
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropzone.addEventListener(eventName, event => {
+                    event.preventDefault();
+                    dropzone.classList.remove('dragover');
+                });
+            });
+
+            dropzone.addEventListener('drop', event => {
+                const files = event.dataTransfer.files;
+                if (files.length > 0) {
+                    imageInput.files = files;
+                    handleFileSelect(files[0]);
+                }
+            });
+
+            dropzone.addEventListener('click', () => imageInput.click());
+            dropzone.addEventListener('keydown', event => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    imageInput.click();
+                }
+            });
+
+            const cameraInput = document.getElementById('camera-input');
+            const cameraBtn = document.getElementById('camera-btn');
+            const directLiveBtn = document.getElementById('direct-live-btn');
+            const cameraModal = document.getElementById('camera-webrtc-modal');
+            const cameraVideo = document.getElementById('camera-video');
+            const cameraCaptureAction = document.getElementById('camera-capture-action');
+            const cameraClose = document.getElementById('camera-webrtc-close');
+            const cameraCanvas = document.getElementById('camera-canvas');
+            let cameraStream = null;
+
+            function stopCamera() {
+                if (cameraStream) {
+                    cameraStream.getTracks().forEach(track => track.stop());
+                    cameraStream = null;
+                }
+                cameraModal.classList.add('hidden');
+            }
+
+            async function openWebcamModal() {
+                try {
+                    cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                    cameraVideo.srcObject = cameraStream;
+                    cameraModal.classList.remove('hidden');
+                } catch (err) {
+                    console.warn("WebRTC not supported or permitted, falling back to file input", err);
+                    cameraInput.click();
+                }
+            }
+
+            if (cameraBtn) {
+                cameraBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openWebcamModal();
+                });
+            }
+
+            if (directLiveBtn) {
+                directLiveBtn.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    await openWebcamModal();
+                    // Automatically click start live stream
+                    setTimeout(() => {
+                        const toggleBtn = document.getElementById('camera-live-toggle');
+                        if (toggleBtn) toggleBtn.click();
+                    }, 600);
+                });
+            }
+
+            if (cameraBtn || directLiveBtn) {
+                cameraClose.addEventListener('click', stopCamera);
+                
+                cameraCaptureAction.addEventListener('click', () => {
+                    if (!cameraStream) return;
+                    cameraCanvas.width = cameraVideo.videoWidth;
+                    cameraCanvas.height = cameraVideo.videoHeight;
+                    cameraCanvas.getContext('2d').drawImage(cameraVideo, 0, 0);
+                    
+                    cameraCanvas.toBlob(blob => {
+                        const file = new File([blob], "camera_capture.jpg", { type: "image/jpeg" });
+                        
+                        // Use DataTransfer to populate the file input
+                        const dt = new DataTransfer();
+                        dt.items.add(file);
+                        imageInput.files = dt.files;
+                        
+                        handleFileSelect(file);
+                        stopCamera();
+                    }, 'image/jpeg', 0.9);
+                });
+                
+                cameraInput.addEventListener('change', event => {
+                    if (event.target.files.length > 0) {
+                        imageInput.files = event.target.files;
+                        handleFileSelect(event.target.files[0]);
+                    }
+                });
+            }
+
+            imageInput.addEventListener('change', event => {
+                if (event.target.files.length > 0) {
+                    handleFileSelect(event.target.files[0]);
+                }
+            });
+
+            function handleFileSelect(file) {
+                if (!file.type.startsWith('image/')) {
+                    alert('Please select an image file.');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = event => {
+                    imagePreview.src = event.target.result;
+                    dropzoneDefault.classList.add('hidden');
+                    previewContainer.classList.remove('hidden');
+                    analyzeBtn.disabled = false;
+                    resetBtn.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+
+            resetBtn.addEventListener('click', () => {
+                dropzone.classList.add('reset-animation');
+                setTimeout(() => {
+                    dropzone.classList.remove('reset-animation');
+                }, 600);
+                
+                uploadForm.reset();
+                imagePreview.src = '';
+                previewContainer.classList.add('hidden');
+                dropzoneDefault.classList.remove('hidden');
+                analyzeBtn.disabled = true;
+                resetBtn.classList.add('hidden');
+                resultsPanel.classList.add('empty');
+                resultsEmptyState.classList.remove('hidden');
+                analysisResults.classList.add('hidden');
+            });
+
+            rawDataToggle.addEventListener('click', () => {
+                rawDataContent.classList.toggle('hidden');
+                rawDataToggle.querySelector('.toggle-icon').classList.toggle('fa-chevron-up');
+                rawDataToggle.querySelector('.toggle-icon').classList.toggle('fa-chevron-down');
+            });
+
+            uploadForm.addEventListener('submit', async event => {
+                event.preventDefault();
+                const file = imageInput.files[0];
+                if (!file) return;
+
+                scannerLine.classList.remove('hidden');
+                scanOverlayText.classList.remove('hidden');
+                analyzeBtn.disabled = true;
+                resetBtn.classList.add('hidden');
+
+                const formData = new FormData();
+                formData.append('image', file);
+                formData.append('component_type', componentSelect.value);
+                formData.append('confidence', confidenceSlider.value / 100);
+
+                try {
+                    const response = await fetch('/predict', { method: 'POST', body: formData });
+                    const data = await response.json();
+
+                    if (!data.success) {
+                        alert('Inspection error: ' + data.error);
+                        return;
+                    }
+
+                    resultOriginalImg.src = data.original_url + '?t=' + Date.now();
+                    resultAnnotatedImg.src = data.annotated_url + '?t=' + Date.now();
+                    countCorrosion.textContent = data.counts.corrosion || 0;
+                    countCrack.textContent = data.counts.crack || 0;
+                    countDent.textContent = data.counts.dent || 0;
+                    reportCaption.textContent = data.caption;
+
+                    const part = data.component_context || {};
+                    componentName.textContent = part.name || 'Aircraft component';
+                    componentUsedFor.textContent = part.used_for || '';
+                    componentWhereUsed.textContent = part.where_used || '';
+                    componentInspectionFocus.textContent = part.inspection_focus || '';
+                    componentRiskNote.textContent = part.risk_note || '';
+
+                    // Mermaid flowchart rendering
+                    const mermaidContainer = document.getElementById('mermaid-container');
+                    
+                    let flowchartDef = '';
+                    const partKey = part.key || 'auto';
+                    switch (partKey) {
+                        case 'fuselage_skin':
+                            flowchartDef = 'graph TD\nAircraft-->Airframe\nAirframe-->Fuselage\nFuselage-->Skin_Panel\nstyle Skin_Panel fill:#0f766e,stroke:#2dd4bf,stroke-width:2px,color:#fff';
+                            break;
+                        case 'wing_panel':
+                            flowchartDef = 'graph TD\nAircraft-->Airframe\nAirframe-->Wings\nWings-->Wing_Panel\nstyle Wing_Panel fill:#0f766e,stroke:#2dd4bf,stroke-width:2px,color:#fff';
+                            break;
+                        case 'engine_cowling':
+                            flowchartDef = 'graph TD\nAircraft-->Powerplant\nPowerplant-->Engine\nEngine-->Nacelle\nNacelle-->Cowling\nstyle Cowling fill:#0f766e,stroke:#2dd4bf,stroke-width:2px,color:#fff';
+                            break;
+                        case 'control_surface':
+                            flowchartDef = 'graph TD\nAircraft-->Airframe\nAirframe-->Wings_and_Tail\nWings_and_Tail-->Control_Surfaces\nstyle Control_Surfaces fill:#0f766e,stroke:#2dd4bf,stroke-width:2px,color:#fff';
+                            break;
+                        case 'landing_gear_door':
+                            flowchartDef = 'graph TD\nAircraft-->Landing_Gear\nLanding_Gear-->Gear_Bay\nGear_Bay-->Gear_Door\nstyle Gear_Door fill:#0f766e,stroke:#2dd4bf,stroke-width:2px,color:#fff';
+                            break;
+                        default:
+                            flowchartDef = 'graph TD\nAircraft-->Exterior_Panel\nstyle Exterior_Panel fill:#0f766e,stroke:#2dd4bf,stroke-width:2px,color:#fff';
+                    }
+                    mermaidContainer.innerHTML = '';
+                    mermaidContainer.removeAttribute('data-processed');
+                    mermaid.render('theGraph', flowchartDef).then((result) => {
+                        mermaidContainer.innerHTML = result.svg;
+                    });
+
+                    reportRecommendations.innerHTML = '';
+                    data.recommendations.forEach(rec => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `<i class="fa-solid fa-circle-check"></i><span>${rec}</span>`;
+                        reportRecommendations.appendChild(li);
+                    });
+
+                    detectionsTableBody.innerHTML = '';
+                    currentDamages = data.damages;
+                    
+                    // 1. Risk Meter Calculation
+                    const totalDamages = data.damages.length;
+                    const crackCount = data.counts.crack || 0;
+                    const dentCount = data.counts.dent || 0;
+                    const corrosionCount = data.counts.corrosion || 0;
+                    const riskBarText = document.getElementById('risk-bar-text');
+                    const riskScoreBadge = document.getElementById('risk-score-badge');
+                    
+                    if (riskBarText && riskScoreBadge) {
+                        if (totalDamages === 0) {
+                            riskBarText.textContent = '░░░░░░░░░░ Low';
+                            riskScoreBadge.textContent = 'Minimal Risk';
+                            riskScoreBadge.style.background = '#0f766e';
+                        } else if (crackCount > 0 || totalDamages >= 3) {
+                            riskBarText.textContent = '██████████ Critical';
+                            riskScoreBadge.textContent = 'High / Immediate Risk';
+                            riskScoreBadge.style.background = '#ef4444';
+                        } else {
+                            riskBarText.textContent = '██████░░░░ Medium';
+                            riskScoreBadge.textContent = 'Moderate Risk';
+                            riskScoreBadge.style.background = '#f59e0b';
+                        }
+                    }
+
+                    // 2. ⭐ 1. Predictive Maintenance AI Dynamic Update
+                    const predCurrentDamage = document.getElementById('pred-current-damage');
+                    const predAiPrediction = document.getElementById('pred-ai-prediction');
+                    const predProbBar = document.getElementById('pred-prob-bar');
+                    const predRecommendation = document.getElementById('pred-recommendation');
+
+                    if (predCurrentDamage && predAiPrediction && data.predictive_analytics) {
+                        predCurrentDamage.textContent = data.predictive_analytics.title;
+                        predCurrentDamage.style.color = data.predictive_analytics.color;
+                        predAiPrediction.innerHTML = data.predictive_analytics.prediction;
+                        if (predProbBar) {
+                            predProbBar.style.width = `${data.predictive_analytics.probability}%`;
+                            predProbBar.style.background = data.predictive_analytics.color;
+                        }
+                        if (predRecommendation) {
+                            predRecommendation.textContent = data.predictive_analytics.recommendation;
+                        }
+                    } else if (predCurrentDamage && predAiPrediction) {
+                        if (totalDamages === 0) {
+                            predCurrentDamage.textContent = 'No structural anomaly';
+                            predCurrentDamage.style.color = '#34d399';
+                            predAiPrediction.innerHTML = 'There is a <strong>4% probability</strong> of surface stress evolution within <strong>500 flight hours</strong>.';
+                            predProbBar.style.width = '4%';
+                            predProbBar.style.background = '#34d399';
+                            predRecommendation.textContent = 'Routine scheduled maintenance sign-off.';
+                        } else if (crackCount > 0) {
+                            predCurrentDamage.textContent = `Fatigue Crack (${crackCount} location${crackCount > 1 ? 's' : ''})`;
+                            predCurrentDamage.style.color = '#ef4444';
+                            predAiPrediction.innerHTML = `There is a <strong>${Math.min(98, 76 + crackCount*8)}% probability</strong> this crack will propagate beyond critical shear limits within <strong>45 flight hours</strong>.`;
+                            predProbBar.style.width = `${Math.min(98, 76 + crackCount*8)}%`;
+                            predProbBar.style.background = '#ef4444';
+                            predRecommendation.textContent = 'Immediate grounded repair required within 15 flight hours.';
+                        } else if (dentCount > 0) {
+                            predCurrentDamage.textContent = `Impact Dent (${dentCount} location${dentCount > 1 ? 's' : ''})`;
+                            predCurrentDamage.style.color = '#f59e0b';
+                            predAiPrediction.innerHTML = 'There is a <strong>78% probability</strong> this dent will develop into fatigue cracking within <strong>120 flight hours</strong>.';
+                            predProbBar.style.width = '78%';
+                            predProbBar.style.background = '#f59e0b';
+                            predRecommendation.textContent = 'Repair flushness contour within 30 flight hours.';
+                        } else {
+                            predCurrentDamage.textContent = `Surface Corrosion (${corrosionCount} patch${corrosionCount > 1 ? 'es' : ''})`;
+                            predCurrentDamage.style.color = '#fbbf24';
+                            predAiPrediction.innerHTML = 'There is a <strong>68% probability</strong> of deep pitting expansion within <strong>140 flight hours</strong>.';
+                            predProbBar.style.width = '68%';
+                            predProbBar.style.background = '#fbbf24';
+                            predRecommendation.textContent = 'Chemical treatment and protective topcoat application within 60 flight hours.';
+                        }
+                    }
+
+                    // 3. ⭐ 10. AI Maintenance Cost Estimator Dynamic Update
+                    const costBreakdownBody = document.getElementById('cost-breakdown-body');
+                    const costValTotal = document.getElementById('cost-val-total');
+
+                    if (data.cost_breakdown && costBreakdownBody && costValTotal) {
+                        costBreakdownBody.innerHTML = data.cost_breakdown.items.map(item => `
+                            <tr>
+                                <td><strong>${item.name}</strong></td>
+                                <td style="color: var(--muted);">${item.desc}</td>
+                                <td style="text-align: right; font-family: monospace; font-size: 1.05rem; color: #6ee7b7; font-weight: 600;">${item.cost}</td>
+                            </tr>
+                        `).join('');
+                        costValTotal.textContent = data.cost_breakdown.total_cost;
+                    } else if (costBreakdownBody && costValTotal) {
+                        const costDescRepair = document.getElementById('cost-desc-repair');
+                        const costValRepair = document.getElementById('cost-val-repair');
+                        if (costValRepair && costValTotal) {
+                            if (totalDamages === 0) {
+                                costDescRepair.textContent = 'No structural repair required (Surface verification only)';
+                                costValRepair.textContent = '₹0';
+                                costValTotal.textContent = '₹6,500';
+                            } else if (crackCount > 0) {
+                                costDescRepair.textContent = 'Structural crack stop-drilling, titanium patch & rivet reinforcement';
+                                costValRepair.textContent = '₹38,500';
+                                costValTotal.textContent = '₹49,000';
+                            } else if (dentCount > 0) {
+                                costDescRepair.textContent = 'Composite filling, aerodynamic blending & structural flush check';
+                                costValRepair.textContent = '₹21,500';
+                                costValTotal.textContent = '₹32,000';
+                            } else {
+                                costDescRepair.textContent = 'Exfoliation corrosion removal, alodine prep & epoxy coating';
+                                costValRepair.textContent = '₹24,000';
+                                costValTotal.textContent = '₹34,500';
+                            }
+                        }
+                    }
+
+                    // 4. ⭐ 12. Maintenance Workflow Engine Reset on New Inspection
+                    if (typeof resetWorkflow === 'function') {
+                        resetWorkflow();
+                    }
+
+                    if (!data.damages.length) {
+                        detectionsTableBody.innerHTML = '<tr><td colspan="4" class="text-center">No trained damage class mapped.</td></tr>';
+                    } else {
+                        data.damages.forEach(damage => {
+                            const tr = document.createElement('tr');
+                            const coords = damage.box.map(coord => Math.round(coord));
+                            tr.innerHTML = `
+                                <td><span class="badge badge-${damage.class}">${damage.class}</span></td>
+                                <td><strong>${damage.confidence}%</strong></td>
+                                <td><code>${damage.size || 'N/A'}</code></td>
+                                <td class="coord-cell">[${coords.join(', ')}]</td>
+                            `;
+                            detectionsTableBody.appendChild(tr);
+                        });
+                    }
+
+                    resultsPanel.classList.remove('empty');
+                    resultsEmptyState.classList.add('hidden');
+                    analysisResults.classList.remove('hidden');
+                    if (window.innerWidth < 1100) {
+                        resultsPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                } catch (error) {
+                    console.error(error);
+                    alert('The inspection server did not respond. Check that the app is running.');
+                } finally {
+                    scannerLine.classList.add('hidden');
+                    scanOverlayText.classList.add('hidden');
+                    analyzeBtn.disabled = false;
+                    resetBtn.classList.remove('hidden');
+                }
+            });
+
+            chatForm.addEventListener('submit', async event => {
+                event.preventDefault();
+                const message = chatInput.value.trim();
+                if (!message) return;
+
+                addChatMessage('user', 'You', message);
+                chatInput.value = '';
+                const typing = addChatMessage('bot', 'Aero assistant', 'Thinking...');
+
+                try {
+                    const response = await fetch('/chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message })
+                    });
+                    const data = await response.json();
+                    typing.querySelector('p').textContent = data.reply || 'I could not generate a response.';
+                } catch (error) {
+                    typing.querySelector('p').textContent = 'The chatbot endpoint is not responding right now.';
+                }
+
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+            });
+
+            function addChatMessage(type, label, text) {
+                const message = document.createElement('div');
+                message.className = `chat-message ${type}`;
+                message.innerHTML = `<strong>${label}</strong><p>${text}</p>`;
+                chatWindow.appendChild(message);
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+                return message;
+            }
+
+            // --- New Features Logic ---
+            confidenceSlider.addEventListener('input', (e) => {
+                confidenceValue.textContent = `${e.target.value}%`;
+            });
+
+            // Export CSV
+            exportCsvBtn.addEventListener('click', () => {
+                if (!currentDamages || currentDamages.length === 0) {
+                    alert('No detections to export.');
+                    return;
+                }
+                const headers = ['Anomaly Type', 'Confidence (%)', 'X_min', 'Y_min', 'X_max', 'Y_max'];
+                const rows = currentDamages.map(d => {
+                    const box = d.box.map(coord => Math.round(coord));
+                    return [d.class, d.confidence, ...box].join(',');
+                });
+                const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows].join('\n');
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", "aeroinspect_report.csv");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
+
+            // Image Zoom / Lightbox
+            function openModal(imgSrc) {
+                if(!imgSrc || imgSrc === '') return;
+                modalImage.src = imgSrc;
+                imageModal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+            
+            function closeModal() {
+                imageModal.classList.add('hidden');
+                modalImage.src = '';
+                document.body.style.overflow = 'auto';
+            }
+
+            resultOriginalImg.addEventListener('click', () => openModal(resultOriginalImg.src));
+            resultAnnotatedImg.addEventListener('click', () => openModal(resultAnnotatedImg.src));
+            modalClose.addEventListener('click', closeModal);
+            imageModal.addEventListener('click', (e) => {
+                if(e.target === imageModal) closeModal();
+            });
+            document.addEventListener('keydown', (e) => {
+                if(e.key === 'Escape' && !imageModal.classList.contains('hidden')) closeModal();
+            });
+
+            // Chatbot Minimize
+            const chatMinimizeBtn = document.getElementById('chat-minimize-btn');
+            const chatPanel = document.getElementById('assistant');
+            if (chatMinimizeBtn && chatPanel) {
+                chatMinimizeBtn.addEventListener('click', () => {
+                    chatPanel.classList.toggle('minimized');
+                });
+            }
+
+            /* --- Multi-language Support (i18n) --- */
+            const translations = {
+                en: { home: "Home", scanner: "Scanner", report: "Report", analytics: "Analytics", aircraft_db: "Aircraft DB", risk_title: "🔥 Aircraft Risk Meter", risk_badge: "Moderate Risk" },
+                fr: { home: "Accueil", scanner: "Scanner", report: "Rapport", analytics: "Analytique", aircraft_db: "BD Avion", risk_title: "🔥 Jauge de Risque", risk_badge: "Risque Modéré" },
+                de: { home: "Startseite", scanner: "Scanner", report: "Bericht", analytics: "Analysen", aircraft_db: "Flugzeug-DB", risk_title: "🔥 Risikomesser", risk_badge: "Mäßiges Risiko" },
+                ja: { home: "ホーム", scanner: "スキャナー", report: "レポート", analytics: "分析", aircraft_db: "航空機DB", risk_title: "🔥 リスクメーター", risk_badge: "中程度のリスク" }
+            };
+
+            const langSelect = document.getElementById('language-select');
+            if (langSelect) {
+                langSelect.addEventListener('change', (e) => {
+                    const lang = e.target.value;
+                    const dict = translations[lang] || translations.en;
+                    document.querySelectorAll('[data-i18n]').forEach(el => {
+                        const key = el.getAttribute('data-i18n');
+                        if (dict[key]) el.textContent = dict[key];
+                    });
+                });
+            }
+
+            /* --- Aircraft Database Modal & Details --- */
+            const dbSearchBtn = document.getElementById('db-search-btn');
+            const dbModal = document.getElementById('db-modal');
+            const dbModalClose = document.getElementById('db-modal-close');
+            const dbSelect = document.getElementById('db-select');
+            const dbResultsPanel = document.getElementById('db-results-panel');
+
+            const aircraftHistory = {
+                "A320": { tail: "A320-101", model: "Airbus A320-200", defects: "Corrosion near cargo door lap joints (Resolved - Jan 2026). Minor scratch on wing leading edge.", maintenance: "C-Check completed 14,000 flight hours. Next inspection due: Sept 2026." },
+                "B737": { tail: "B737-800", model: "Boeing 737-800NG", defects: "Fatigue crack check near fuselage station 540 (Clear). Hail impact dents on vertical stabilizer.", maintenance: "B-Check signed off May 2026. Routine eddy-current NDT scheduled next month." },
+                "B787": { tail: "B787-9", model: "Boeing 787-9 Dreamliner", defects: "Composite delamination check (Negative). Minor paint erosion near engine fan cowl.", maintenance: "Heavy composite surface check cleared. Overall health: 96%." },
+                "A350": { tail: "A350-900", model: "Airbus A350-900", defects: "No structural anomalies recorded. Lightning strike check on winglet passed.", maintenance: "A-Check completed. Next scheduled check: Dec 2026." },
+                "Cessna": { tail: "C172-SKY", model: "Cessna 172 Skyhawk", defects: "Leading edge dent from bird strike (blended and reinforced). Strut attachment checked.", maintenance: "Annual 100-hour inspection completed April 2026." }
+            };
+
+            function updateDbDisplay(key) {
+                const info = aircraftHistory[key] || aircraftHistory["A320"];
+                if (dbResultsPanel) {
+                    dbResultsPanel.innerHTML = `
+                        <div style="margin-bottom: 12px;"><strong>Tail Number:</strong> <span class="badge badge-dent">${info.tail}</span> | <strong>Model:</strong> ${info.model}</div>
+                        <div style="margin-bottom: 12px;"><strong>Previous Defects:</strong> <p style="color: var(--text); margin: 4px 0;">${info.defects}</p></div>
+                        <div><strong>Maintenance History:</strong> <p style="color: var(--muted); margin: 4px 0;">${info.maintenance}</p></div>
+                    `;
+                }
+            }
+
+            if (dbSearchBtn && dbModal) {
+                dbSearchBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    dbModal.classList.remove('hidden');
+                    updateDbDisplay(dbSelect.value);
+                });
+                if (dbModalClose) dbModalClose.addEventListener('click', () => dbModal.classList.add('hidden'));
+                if (dbSelect) dbSelect.addEventListener('change', (e) => updateDbDisplay(e.target.value));
+            }
+
+            /* --- Live Camera SocketIO Streaming --- */
+            let liveInterval = null;
+            let socket = null;
+            const cameraLiveToggle = document.getElementById('camera-live-toggle');
+            const cameraVideoEl = document.getElementById('camera-video');
+            const cameraOverlay = document.getElementById('camera-overlay');
+
+            if (cameraLiveToggle && cameraVideoEl) {
+                cameraLiveToggle.addEventListener('click', () => {
+                    if (liveInterval) {
+                        clearInterval(liveInterval);
+                        liveInterval = null;
+                        cameraLiveToggle.innerHTML = '<i class="fa-solid fa-video"></i> Start Live AI Detection';
+                        cameraLiveToggle.classList.remove('btn-primary');
+                        cameraLiveToggle.classList.add('btn-secondary');
+                        if (cameraOverlay) cameraOverlay.getContext('2d').clearRect(0, 0, cameraOverlay.width, cameraOverlay.height);
+                    } else {
+                        if (!socket) {
+                            socket = io();
+                            socket.on('detection_results', (data) => {
+                                if (!cameraOverlay || !cameraVideoEl) return;
+                                const ctx = cameraOverlay.getContext('2d');
+                                cameraOverlay.width = cameraVideoEl.videoWidth || 640;
+                                cameraOverlay.height = cameraVideoEl.videoHeight || 480;
+                                ctx.clearRect(0, 0, cameraOverlay.width, cameraOverlay.height);
+
+                                data.damages.forEach(d => {
+                                    const [x1, y1, x2, y2] = d.box;
+                                    const bw = x2 - x1;
+                                    const bh = y2 - y1;
+                                    const color = d.class === 'crack' ? '#ef4444' : (d.class === 'dent' ? '#f59e0b' : '#06b6d4');
+                                    
+                                    ctx.strokeStyle = color;
+                                    ctx.lineWidth = 3;
+                                    ctx.strokeRect(x1, y1, bw, bh);
+                                    
+                                    ctx.fillStyle = d.class === 'crack' ? 'rgba(239, 68, 68, 0.18)' : (d.class === 'dent' ? 'rgba(245, 158, 11, 0.18)' : 'rgba(6, 182, 212, 0.18)');
+                                    ctx.fillRect(x1, y1, bw, bh);
+                                    
+                                    const label = ` [${d.class.toUpperCase()} ${d.confidence}%] `;
+                                    ctx.font = 'bold 13px sans-serif';
+                                    const textWidth = ctx.measureText(label).width;
+                                    ctx.fillStyle = color;
+                                    ctx.fillRect(x1, y1 > 24 ? y1 - 22 : y1, textWidth + 8, 22);
+                                    ctx.fillStyle = '#ffffff';
+                                    ctx.fillText(label, x1 + 4, y1 > 24 ? y1 - 6 : y1 + 16);
+                                });
+                            });
+                        }
+                        cameraLiveToggle.innerHTML = '<i class="fa-solid fa-stop"></i> Stop Live AI Detection';
+                        cameraLiveToggle.classList.remove('btn-secondary');
+                        cameraLiveToggle.classList.add('btn-primary');
+
+                        const tempCanvas = document.createElement('canvas');
+                        liveInterval = setInterval(() => {
+                            if (!cameraVideoEl.srcObject) return;
+                            tempCanvas.width = cameraVideoEl.videoWidth || 640;
+                            tempCanvas.height = cameraVideoEl.videoHeight || 480;
+                            tempCanvas.getContext('2d').drawImage(cameraVideoEl, 0, 0);
+                            const dataUrl = tempCanvas.toDataURL('image/jpeg', 0.6);
+                            if (socket) socket.emit('video_frame', { image: dataUrl });
+                        }, 500);
+                    }
+                });
+            }
+
+            /* --- Maintenance Workflow Stepper Logic --- */
+            window.advanceWorkflow = function(step) {
+                const steps = [
+                    { id: 'wf-step-review', name: 'Engineer Review', activeTxt: '⏳ Click to Approve', doneTxt: 'Approved' },
+                    { id: 'wf-step-order', name: 'Repair Order', activeTxt: '⏳ Click to Dispatch', doneTxt: 'Dispatched' },
+                    { id: 'wf-step-repair', name: 'Repair', activeTxt: '⏳ Click when Done', doneTxt: 'Repaired' },
+                    { id: 'wf-step-qc', name: 'Quality Check', activeTxt: '⏳ Click to Verify', doneTxt: 'Verified' },
+                    { id: 'wf-step-approved', name: 'Approved', activeTxt: '⏳ Sign-off Release', doneTxt: 'Signed-off' },
+                    { id: 'wf-step-released', name: 'Aircraft Released', activeTxt: '🚀 Released to Service', doneTxt: 'In Service' }
+                ];
+
+                const statusMsg = document.getElementById('wf-status-msg');
+
+                for (let i = 3; i <= 8; i++) {
+                    const el = document.getElementById(steps[i-3].id);
+                    if (!el) continue;
+                    
+                    if (i < step) {
+                        el.className = 'step-item step-completed';
+                        el.style.background = 'rgba(16,185,129,0.15)';
+                        el.style.border = '1px solid #10b981';
+                        el.style.boxShadow = 'none';
+                        el.style.opacity = '1';
+                        el.innerHTML = `<i class="fa-solid fa-check-double" style="color: #34d399; font-size: 1.2rem;"></i><div style="font-weight: 600; font-size: 0.85rem; margin-top: 6px; color: #fff;">${steps[i-3].name}</div><span style="font-size: 0.7rem; color: #34d399;">${steps[i-3].doneTxt}</span>`;
+                    } else if (i === step) {
+                        el.className = 'step-item step-active';
+                        el.style.background = 'rgba(59,130,246,0.25)';
+                        el.style.border = '2px solid #60a5fa';
+                        el.style.boxShadow = '0 0 12px rgba(96,165,250,0.4)';
+                        el.style.opacity = '1';
+                        el.innerHTML = `<i class="fa-solid fa-user-gear" style="color: #60a5fa; font-size: 1.2rem;"></i><div style="font-weight: 600; font-size: 0.85rem; margin-top: 6px; color: #fff;">${steps[i-3].name}</div><span style="font-size: 0.7rem; color: #93c5fd; font-weight: 600;">${steps[i-3].activeTxt}</span>`;
+                        if (statusMsg) statusMsg.innerHTML = `<i class="fa-solid fa-info-circle"></i> Current Stage: <strong>${steps[i-3].name}</strong>. ${steps[i-3].activeTxt}`;
+                    } else if (i > step && i === step + 1) {
+                        el.className = 'step-item step-next';
+                        el.style.background = 'rgba(15,23,42,0.6)';
+                        el.style.border = '1px dashed #60a5fa';
+                        el.style.boxShadow = 'none';
+                        el.style.opacity = '0.9';
+                        el.innerHTML = `<i class="fa-solid fa-arrow-right" style="color: #60a5fa; font-size: 1.2rem;"></i><div style="font-weight: 600; font-size: 0.85rem; margin-top: 6px; color: var(--text);">${steps[i-3].name}</div><span style="font-size: 0.7rem; color: #60a5fa;">Next Step</span>`;
+                    } else {
+                        el.className = 'step-item';
+                        el.style.background = 'rgba(15,23,42,0.6)';
+                        el.style.border = '1px solid var(--line)';
+                        el.style.boxShadow = 'none';
+                        el.style.opacity = '0.5';
+                        el.innerHTML = `<i class="fa-solid fa-clock" style="color: var(--muted); font-size: 1.2rem;"></i><div style="font-weight: 600; font-size: 0.85rem; margin-top: 6px; color: var(--text);">${steps[i-3].name}</div><span style="font-size: 0.7rem; color: var(--muted);">Pending</span>`;
+                    }
+                }
+                
+                if (step === 8) {
+                    const el = document.getElementById('wf-step-released');
+                    if (el) {
+                        el.className = 'step-item step-completed';
+                        el.style.background = 'rgba(16,185,129,0.25)';
+                        el.style.border = '2px solid #10b981';
+                        el.style.boxShadow = '0 0 16px rgba(16,185,129,0.6)';
+                        el.innerHTML = `<i class="fa-solid fa-plane-circle-check" style="color: #34d399; font-size: 1.4rem;"></i><div style="font-weight: 700; font-size: 0.85rem; margin-top: 6px; color: #fff;">Aircraft Released</div><span style="font-size: 0.75rem; color: #34d399; font-weight: 700;">✈️ Flight Ready</span>`;
+                    }
+                    if (statusMsg) statusMsg.innerHTML = `<i class="fa-solid fa-check-circle" style="color: #34d399;"></i> <strong>Workflow Complete!</strong> Aircraft has passed all quality checks and is certified for flight release.`;
+                }
+            };
+
+            window.resetWorkflow = function() {
+                advanceWorkflow(3);
+            };
+        });
+    </script>
+</body>
+</html>

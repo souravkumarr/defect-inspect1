@@ -1,0 +1,21 @@
+{
+  "settings_version": "0.0.6",
+  "datasets_dir": "C:\\Users\\soura\\Downloads\\fault-detection-main\\fault-detection-main\\datasets",
+  "weights_dir": "weights",
+  "runs_dir": "runs",
+  "uuid": "684dde628e8e28db2b865a436d6825704bc34c5b6ae9c6313da15544c1ef744d",
+  "sync": true,
+  "api_key": "",
+  "openai_api_key": "",
+  "clearml": true,
+  "comet": true,
+  "dvc": true,
+  "hub": true,
+  "mlflow": true,
+  "neptune": true,
+  "raytune": true,
+  "tensorboard": false,
+  "wandb": false,
+  "vscode_msg": true,
+  "openvino_msg": true
+}

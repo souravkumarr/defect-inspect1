@@ -1,0 +1,7 @@
+path: C:/Users/soura/Downloads/fault-detection-main/fault-detection-main/Aircraft-Surface-Damage-25
+train: train/images
+val: valid/images
+test: test/images
+
+nc: 3
+names: ['corrosion', 'crack', 'dent']

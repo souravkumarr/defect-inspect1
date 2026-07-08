@@ -1,0 +1,28 @@
+# Python virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Cache and temporary folders
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.matplotlib/
+instance/
+
+# Training logs and temporary datasets
+runs/
+dataset/
+Aircraft-Surface-Damage-25/
+*.zip
+
+# IDE / System files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# NOTE: best.pt and yolov8n.pt are intentionally NOT ignored so the AI model runs instantly on new machines.
